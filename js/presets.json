@@ -1,0 +1,25 @@
+{
+  "themes": [
+    { "name": "Nintendo Classic", "console": "#aaaaaa", "button": "#cc0000", "border": "#000000", "text": "#000000", "highlight": "#ff4444" },
+    { "name": "Emerald Edition", "console": "#038c4c", "button": "#ffffff", "border": "#000000", "text": "#00ff88", "highlight": "#00ffaa" },
+    { "name": "Maize & Blue", "console": "#0d47a1", "button": "#ffeb3b", "border": "#ffffff", "text": "#000000", "highlight": "#ffd600" },
+    { "name": "Black & Yellow", "console": "#000000", "button": "#ffeb3b", "border": "#000000", "text": "#ffeb3b", "highlight": "#ffff00" },
+    { "name": "Purple Gold Royal", "console": "#4a148c", "button": "#ffb300", "border": "#000000", "text": "#ffffff", "highlight": "#ffd740" },
+    { "name": "Red Orange Solar", "console": "#ff3b00", "button": "#ff9800", "border": "#000000", "text": "#000000", "highlight": "#ffcc80" },
+    { "name": "Silver & Scarlet", "console": "#bdbdbd", "button": "#c62828", "border": "#000000", "text": "#000000", "highlight": "#ff5252" },
+    { "name": "Cyberpunk Neon", "console": "#000000", "button": "#f0f", "border": "#0ff", "text": "#0ff", "highlight": "#ff00ff" },
+    { "name": "Skulls & Roses", "console": "#111111", "button": "#ffffff", "border": "#ff0000", "text": "#ff0000", "highlight": "#ffdddd" },
+    { "name": "Carbon Fiber Steel", "console": "#263238", "button": "#37474f", "border": "#90a4ae", "text": "#00ffff", "highlight": "#0097a7" },
+    { "name": "Emerald Night", "console": "#000000", "button": "#00bfa5", "border": "#004d40", "text": "#e0f2f1", "highlight": "#1de9b6" },
+    { "name": "Violet Dreamscape", "console": "#311b92", "button": "#9575cd", "border": "#512da8", "text": "#ffea00", "highlight": "#b388ff" },
+    { "name": "Sunset Spectrum", "console": "#ff7043", "button": "#ffcc80", "border": "#bf360c", "text": "#000000", "highlight": "#ffb74d" },
+    { "name": "Tropical Wave", "console": "#00bcd4", "button": "#ff4081", "border": "#000000", "text": "#000000", "highlight": "#ff80ab" },
+    { "name": "Obsidian Redline", "console": "#1c1c1c", "button": "#ff1744", "border": "#000000", "text": "#00ff00", "highlight": "#ff5252" },
+    { "name": "Volt Cyber Grid", "console": "#222222", "button": "#00e676", "border": "#64dd17", "text": "#ffab00", "highlight": "#ffff00" },
+    { "name": "Golden Circuit", "console": "#000000", "button": "#ffd54f", "border": "#ffb300", "text": "#000000", "highlight": "#fff176" },
+    { "name": "Aqua Pulse", "console": "#001f3f", "button": "#00ffff", "border": "#00bfa5", "text": "#ffffff", "highlight": "#00e5ff" },
+    { "name": "Desert Haze", "console": "#be9b7b", "button": "#f57f17", "border": "#000000", "text": "#000000", "highlight": "#ffab00" },
+    { "name": "Ice Silver", "console": "#cfd8dc", "button": "#ffffff", "border": "#000000", "text": "#0d47a1", "highlight": "#64b5f6" },
+    { "name": "Noir Minimal", "console": "#000000", "button": "#00ff00", "border": "#00ff00", "text": "#00ff00", "highlight": "#ffffff" }
+  ]
+}
