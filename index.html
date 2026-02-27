@@ -6,29 +6,27 @@
         content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>Black Hole Sultan V 1.0.0</title>
 
-  <!-- Manifest and Icons -->
+  <!-- Manifest and Icons -->
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" sizes="192x192" href="media/icons/icon-192.png">
-  <link rel="apple-touch-icon" href="media/icons/icon-512.png">
+  <link rel="icon" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
 
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="css/sultan.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="sultan.css">
 </head>
 
 <body>
-  <!-- Push‑to‑Start Gate -->
   <div id="startGate"
        style="position:absolute;inset:0;display:flex;flex-direction:column;
               justify-content:center;align-items:center;background:#000;color:#0f0;">
     <h2 style="font-family:monospace;font-size:12px;">BLACK HOLE SULTAN V 1.0.0</h2>
     <button id="pushStart"
-            style="background:#0f0;color:#000;border:1px solid #0f0;
+            style="background:#0f0;color:#000;border:1px solid #0f0;
                    border-radius:50%;width:80px;height:80px;font-weight:bold;">
       START
     </button>
   </div>
 
-  <!-- Viewport & HUD -->
   <div id="viewportArea">
     <canvas id="viewportCanvas" width="400" height="400"></canvas>
     <div id="particleCount">0</div>
@@ -42,27 +40,32 @@
     <button id="settingsBtn">⚙️</button>
   </div>
 
-  <!-- Core and HUD Modules -->
-  <script src="js/core.js" defer></script>
-  <script src="js/hud.js" defer></script>
+  <script src="core.js" defer></script>
+  <script src="hud.js" defer></script>
 
-  <!-- Boot sequence -->
   <script>
-    // Push‑to‑start → activates audio and sim
+  window.addEventListener('DOMContentLoaded', () => {
     const gate = document.getElementById('startGate');
     const btn  = document.getElementById('pushStart');
+
     btn.addEventListener('click', async () => {
       gate.style.display = 'none';
-      if (window.BHS && typeof BHS.start === 'function') await BHS.start();
+      if (window.BHS && typeof BHS.start === 'function') {
+        try { await BHS.start(); }
+        catch (err) { console.error('BHS start error:', err); }
+      } else {
+        console.warn('BHS not found.');
+      }
     });
 
-    // Register Service Worker (after modules loaded)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js')
-          .then(() => console.log('Service Worker registered.'));
+          .then(() => console.log('Service Worker registered.'))
+          .catch(e => console.error('SW register failed:', e));
       });
     }
+  });
   </script>
 </body>
 </html>
