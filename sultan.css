@@ -1,125 +1,53 @@
-/*  Black Hole Sultan V 1.0.0  —  HUD / Console Styles  */
-/*  © Caleb Beardsley 2026 • All Rights Reserved */
-
-/* === COLOR VARIABLES injected by HUD === */
-:root {
-  --console-bg: #000;
-  --btn-bg: #0f0;
-  --btn-border: #0f0;
-  --text-color: #0f0;
-  --highlight: #fff;
-}
-
-/* === GLOBAL LAYOUT === */
-body {
+/* sultan.css */
+html, body {
   margin: 0;
+  padding: 0;
   background: #000;
-  color: var(--text-color);
-  font-family: 'Courier New', monospace;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100vh;
+  color: #0f0;
   overflow: hidden;
+  font-family: monospace;
 }
 
-/* --- Viewport canvas 70% --- */
 #viewportArea {
   position: relative;
-  flex: 7;
-  width: 100%;
-  max-width: 400px;
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-}
-#viewportCanvas {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border: 1px solid var(--btn-border);
-  background: radial-gradient(circle, #010 0%, #000 90%);
-  box-shadow: 0 0 25px var(--highlight);
+  align-items: center;
 }
 
-/* --- Particle counter (large, transparent) --- */
+canvas {
+  border: 1px solid #f00;
+}
+
 #particleCount {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 100px;
-  font-weight: 900;
-  opacity: 0.5;
-  color: var(--highlight);
-  pointer-events: none;
+  top: 5px;
+  right: 8px;
+  font-size: 14px;
+  color: #f00;
 }
 
-/* --- FPS / TPS readouts --- */
 .hudReadout {
   position: absolute;
-  left: 10px;
-  color: var(--text-color);
-  font-size: 11px;
-  opacity: 0.9;
-}
-#hudFPS { top: 10px; }
-#hudTPS { top: 30px; }
-
-/* --- Console 30% --- */
-#consoleHUD {
-  flex: 3;
-  width: 100%;
-  max-width: 400px;
-  background: var(--console-bg);
-  border-top: 2px solid var(--btn-border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 4px;
-}
-
-/* --- Theme name label --- */
-#themeName {
-  font-size: 10px;
-  margin: 2px 0 4px;
-  text-transform: uppercase;
-  color: var(--highlight);
-}
-
-/* --- Button grid and icons --- */
-#buttonPad {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-gap: 4px;
-  width: 95%;
-  justify-items: center;
-}
-.hudBtn, #settingsBtn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  bottom: 5px;
+  right: 8px;
   font-size: 12px;
-  background: var(--btn-bg);
-  color: var(--text-color);
-  border: 1px solid var(--btn-border);
-  font-weight: bold;
-  cursor: pointer;
-  touch-action: manipulation;
+  color: #0f0;
 }
-.hudBtn:active, #settingsBtn:active {
-  background: var(--highlight);
+
+#consoleHUD {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+button {
+  background: #0f0;
   color: #000;
-}
-
-#settingsBtn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin-top: 6px;
-}
-
-/* --- Touch optimisation --- */
-button, canvas {
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  border: 1px solid #0f0;
+  border-radius: 4px;
+  font-weight: bold;
+  padding: 4px 8px;
 }
