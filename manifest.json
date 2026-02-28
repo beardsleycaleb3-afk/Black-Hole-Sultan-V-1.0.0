@@ -1,12 +1,15 @@
 {
-  "name": "Black Hole Sultan V 1.0.0",
-  "short_name": "BHSultan",
+  "name": "SULTAN_MOBILE_V1",
+  "short_name": "SULTAN",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#00ff00",
+  "theme_color": "#00ff41",
+  "description": "NEGENTROPY_SYSTEM_V1",
+  "version": "1.0.2",
+  "checksum_layer": "double-loop",
   "icons": [
-    { "src": "icon.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "icon.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "icon.png", "type": "image/png", "sizes": "512x512" }
   ]
 }
