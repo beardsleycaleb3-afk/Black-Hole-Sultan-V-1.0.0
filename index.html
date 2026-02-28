@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <title>SULTAN_MOBILE_V1</title>
     <style>
-        :root { --pwr: #00ff41; --accent: #fff; --bg: #000; --panel: #111; }
+        :root { --pwr: #ff0000; --accent: #fff; --bg: #000; --panel: #111; }
         .emerald { --bg: #000; --panel: #000; --pwr: #00ff41; --accent: #fff; }
         .solar   { --bg: #000; --panel: #000; --pwr: #ffaa00; --accent: #ff0000; }
         .chrome  { --bg: #000; --panel: #111; --pwr: #fff;    --accent: #888; }
@@ -19,6 +19,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; user-select: none; }
         body { background: var(--bg); color: var(--pwr); font-family: 'Courier New', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; transition: 0.5s; }
 
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #f00; cursor: pointer; }
         #hud { position: absolute; top: 0; width: 100%; height: 10%; padding: 10px; z-index: 10; font-size: 10px; font-weight: bold; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--pwr); display: flex; justify-content: space-between; }
         #viewport { position: absolute; top: 10%; width: 100%; height: 70%; overflow: hidden; border: 4px solid var(--accent); }
         #controls { position: absolute; bottom: 0; width: 100%; height: 20%; background: var(--panel); border-top: 2px solid var(--pwr); display: flex; flex-direction: column; justify-content: space-around; padding: 8px; z-index: 20; }
@@ -31,20 +32,25 @@
         @keyframes pulse { 0%, 100% { box-shadow: 0 0 5px #ffd700; } 50% { box-shadow: 0 0 20px #ffd700; } }
     </style>
 </head>
-<body class="emerald" id="app-body">
+<body class="blood" id="app-body">
+    <div id="loader" onclick="initSystem()">
+        <div style="font-size: 20px; margin-bottom: 20px;">[ SULTAN_V1 ]</div>
+        <div>TAP TO INITIALIZE LOADER</div>
+    </div>
+
     <div id="hud">
         <div class="hud-col"><span>P: <span id="p-count">0</span></span><br><span>RPM: <span id="rpm-val">2.0</span></span></div>
         <div style="text-align:center"><div>NEGENTROPY</div><div id="status-msg">STANDBY</div></div>
-        <div class="hud-col" style="text-align:right"><span>FPS: <span id="fps">60</span></span><br><span>100%</span></div>
+        <div class="hud-col" style="text-align:right"><span>FPS: <span id="fps">60</span></span><br><span>SYNTH: ON</span></div>
     </div>
     <div id="viewport"><canvas id="gl-canvas"></canvas></div>
     <div id="controls">
-        <button id="btn-auto" class="btn-auto" onclick="toggleAutoMode()">AUTO_SEQ: BEETHOVEN_V</button>
+        <button id="btn-auto" class="btn-auto" onclick="toggleAutoMode()">AUTO_SEQ: SYNTH_BEETHOVEN</button>
         <div style="display:flex;justify-content:space-evenly">
-            <button class="btn-sq" onclick="adjustRPM(0.5)">RPM+</button>
-            <button class="btn-sq" onclick="adjustRPM(-0.5)">RPM-</button>
-            <button class="btn-sq" onclick="adjustParticles(5000)">+5k</button>
-            <button class="btn-sq" onclick="flushParticles()">FLUSH</button>
+            <button class="btn-sq" onclick="playManual('sine')">SINE</button>
+            <button class="btn-sq" onclick="playManual('triangle')">TRI</button>
+            <button class="btn-sq" onclick="playManual('square')">SQU</button>
+            <button class="btn-sq" onclick="playManual('sawtooth')">SAW</button>
         </div>
         <div style="display:flex;justify-content:space-evenly">
             <button class="btn-theme" onclick="setSkin('emerald')">∆</button>
@@ -60,89 +66,114 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // FOOTER 1: SW REGISTRATION
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js')
-            .then(() => console.log('Checksum Header Validated'));
+        let audioCtx, reverbNode, scene, camera, renderer, singularity, points, pCount = 0, rpm = 2.0, isAuto = false;
+        let lastTime = performance.now(), frameCount = 0, noteIndex = 0;
+        const b5Freqs = [392, 392, 392, 311, 349, 349, 349, 293]; 
+        const waveTypes = ['sine', 'triangle', 'square', 'sawtooth'];
+
+        function initSystem() {
+            document.getElementById('loader').style.display = 'none';
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Reverb Implementation
+            const delay = audioCtx.createDelay();
+            delay.delayTime.value = 0.4;
+            const feedback = audioCtx.createGain();
+            feedback.gain.value = 0.3;
+            delay.connect(feedback);
+            feedback.connect(delay);
+            reverbNode = delay;
+            reverbNode.connect(audioCtx.destination);
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./service-worker.js').then(() => console.log('Checksum Header Validated'));
+            }
+            initVisuals();
         }
 
-        let scene, camera, renderer, singularity, points, pCount = 0, rpm = 2.0, isAuto = false;
-        let lastTime = performance.now(), frameCount = 0, noteIndex = 0;
-        const audio = new Audio('beethoven_5.mp3'); 
-        const b5Notes = [0.45, 0.65, 0.85, 1.25, 2.15, 2.35, 2.55, 3.10, 4.05, 4.25, 4.45, 4.8, 5.2, 5.4, 5.6, 6.0, 6.4, 6.6, 6.8, 7.2, 7.8, 8.0, 8.2, 8.6, 9.1, 9.3, 9.5, 10.0, 10.5, 10.7, 10.9, 11.4, 11.9, 12.1, 12.3, 12.8, 13.3, 13.5, 13.7, 14.2, 14.7, 14.9, 15.1, 15.6, 16.1, 16.3, 16.5, 17.0, 17.5, 17.7, 17.9, 18.4, 18.9, 19.1, 19.3, 19.8, 20.3, 20.5, 20.7, 21.2, 21.7, 21.9, 22.1, 22.6, 23.1, 23.3, 23.5, 24.0, 24.5, 24.7, 24.9, 25.4, 25.9, 26.1, 26.3, 26.8, 27.3, 27.5, 27.7, 28.2, 28.7, 28.9, 29.1, 29.6, 30.1, 30.3, 30.5, 31.0];
+        function playTone(type, freq, dur = 0.5) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(reverbNode);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+            buildParticles(pCount + 100);
+        }
 
-        function init() {
+        function playManual(type) { playTone(type, 440 + (Math.random() * 200)); }
+
+        function initVisuals() {
             const vp = document.getElementById('viewport');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 3000);
             camera.position.z = 600;
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: false, alpha: true });
             renderer.setSize(vp.clientWidth, vp.clientHeight);
-            singularity = new THREE.Mesh(new THREE.IcosahedronGeometry(120, 1), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.8 }));
+            singularity = new THREE.Mesh(new THREE.IcosahedronGeometry(120, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true, transparent: true, opacity: 0.9 }));
             scene.add(singularity);
-            updateSkinColor();
             animate();
         }
 
         function buildParticles(targetCount) {
             if (points) scene.remove(points);
             pCount = Math.max(0, targetCount);
-            if (pCount === 0) { document.getElementById('p-count').innerText = 0; return; }
             const pArr = new Float32Array(pCount * 3);
+            const cArr = new Float32Array(pCount * 3);
             for(let i = 0; i < pCount; i++) {
-                let r = 400 + Math.random() * 200, th = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5), phi = Math.acos(1 - 2 * (i + 0.5) / pCount);
-                pArr[i*3] = r * Math.cos(th) * Math.sin(phi); pArr[i*3+1] = r * Math.sin(th) * Math.sin(phi); pArr[i*3+2] = r * Math.cos(phi);
+                let r = 350 + Math.random() * 250, th = Math.random() * Math.PI * 2, phi = Math.acos(Math.random() * 2 - 1);
+                pArr[i*3] = r * Math.sin(phi) * Math.cos(th); pArr[i*3+1] = r * Math.sin(phi) * Math.sin(th); pArr[i*3+2] = r * Math.cos(phi);
+                cArr[i*3] = Math.random(); cArr[i*3+1] = Math.random(); cArr[i*3+2] = Math.random();
             }
             const geo = new THREE.BufferGeometry();
             geo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
-            points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 3, color: singularity.material.color, transparent: true, blending: THREE.AdditiveBlending }));
+            geo.setAttribute('color', new THREE.BufferAttribute(cArr, 3));
+            points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 4, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true }));
             scene.add(points);
             document.getElementById('p-count').innerText = pCount.toLocaleString();
         }
 
-        function adjustRPM(amt) { rpm = Math.max(0, rpm + amt); document.getElementById('rpm-val').innerText = rpm.toFixed(1); }
-        function adjustParticles(amt) { buildParticles(pCount + amt); }
-        function flushParticles() { buildParticles(0); }
-        function setSkin(className) { document.getElementById('app-body').className = className; updateSkinColor(); if (navigator.vibrate) navigator.vibrate(30); }
-
-        function updateSkinColor() {
-            setTimeout(() => {
-                const colorHex = getComputedStyle(document.body).getPropertyValue('--pwr').trim();
-                singularity.material.color.set(colorHex);
-                if (points) points.material.color.set(colorHex);
-            }, 50);
-        }
+        function setSkin(className) { document.getElementById('app-body').className = className; if (navigator.vibrate) navigator.vibrate(30); }
 
         function toggleAutoMode() {
             isAuto = !isAuto;
-            const btn = document.getElementById('btn-auto');
+            document.getElementById('btn-auto').classList.toggle('active');
             if (isAuto) {
-                btn.classList.add('active'); document.getElementById('status-msg').innerText = "BEETHOVEN";
-                noteIndex = 0; flushParticles(); audio.currentTime = 0; audio.play();
+                document.getElementById('status-msg').innerText = "SYNTH_MODE";
+                autoLoop();
             } else {
-                btn.classList.remove('active'); document.getElementById('status-msg').innerText = "STANDBY";
-                audio.pause();
+                document.getElementById('status-msg').innerText = "STANDBY";
+            }
+        }
+
+        async function autoLoop() {
+            while(isAuto) {
+                let freq = b5Freqs[noteIndex % b5Freqs.length];
+                let wave = waveTypes[noteIndex % 4];
+                playTone(wave, freq, 0.4);
+                noteIndex++;
+                await new Promise(r => setTimeout(r, 450));
             }
         }
 
         function animate() {
             requestAnimationFrame(animate);
             singularity.rotation.y += 0.01 * rpm; singularity.rotation.x += 0.005 * rpm;
-            if (isAuto && noteIndex < b5Notes.length && audio.currentTime >= b5Notes[noteIndex]) {
-                buildParticles(pCount + 1); noteIndex++; if (navigator.vibrate) navigator.vibrate(10);
-            }
             if (points) {
-                points.rotation.y -= 0.005 * rpm;
+                points.rotation.y -= 0.002;
                 const p = points.geometry.attributes.position.array;
-                for(let i=0; i<pCount*3; i++) { p[i] *= 0.992; }
+                for(let i=0; i<pCount*3; i++) { p[i] *= 0.994; }
                 points.geometry.attributes.position.needsUpdate = true;
             }
             const now = performance.now(); frameCount++;
             if (now - lastTime >= 1000) { document.getElementById('fps').innerText = frameCount; frameCount = 0; lastTime = now; }
             renderer.render(scene, camera);
         }
-        init();
     </script>
-    <script>console.log('Checksum Footer 2 Verified');</script>
 </body>
 </html>
