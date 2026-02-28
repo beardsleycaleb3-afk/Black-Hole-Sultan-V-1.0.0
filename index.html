@@ -1,71 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport"
-        content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-  <title>Black Hole Sultan V 1.0.0</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SULTAN_MOBILE_V1</title>
+    <style>
+        :root { --pwr: #00ff41; --glow: rgba(0,255,65,0.5); --bg: #000; }
+        .emerald { --pwr: #00ff41; --glow: rgba(0,255,65,0.6); }
+        .solar { --pwr: #ffaa00; --glow: rgba(255,100,0,0.6); }
+        .chrome { --pwr: #ffffff; --glow: rgba(255,255,255,0.4); }
+        .cobalt { --pwr: #0044ff; --glow: rgba(0,68,255,0.6); }
+        .stealth { --pwr: #444444; --glow: rgba(255,255,255,0.1); }
+        .amber { --pwr: #ffcc00; --glow: rgba(255,204,0,0.6); }
+        .rhodium { --pwr: #e2e7e1; --glow: rgba(226,231,225,0.5); }
+        .rose { --pwr: #ff007f; --glow: rgba(255,0,127,0.6); }
+        .blood { --pwr: #ff0000; --glow: rgba(255,0,0,0.7); }
 
-  <!-- Manifest and Icons -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-512.png">
+        * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; user-select: none; }
+        body { background: var(--bg); color: var(--pwr); font-family: 'Courier New', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; transition: 0.5s; }
 
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="sultan.css">
+        /* HUD - Top 10% */
+        #hud { position: absolute; top: 0; width: 100%; height: 10%; padding: 10px; z-index: 10; font-size: 10px; font-weight: bold; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--pwr); display: flex; justify-content: space-between; flex-wrap: wrap; }
+        .hud-col { display: flex; flex-direction: column; gap: 4px; }
+        .hud-center { text-align: center; color: #ffd700; font-size: 12px; }
+
+        /* 3D Canvas - Middle 70% */
+        #viewport { position: absolute; top: 10%; width: 100%; height: 70%; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* Controls - Bottom 20% */
+        #controls { position: absolute; bottom: 0; width: 100%; height: 20%; background: rgba(5,5,5,0.95); border-top: 2px solid var(--pwr); display: flex; flex-direction: column; justify-content: space-around; padding: 5px; z-index: 20; }
+        
+        .row { display: flex; justify-content: space-evenly; align-items: center; width: 100%; }
+
+        /* Button Styles */
+        button { background: #000; border: 2px solid var(--pwr); color: var(--pwr); box-shadow: 0 0 5px var(--glow); transition: 0.1s; font-weight: bold; display: flex; justify-content: center; align-items: center; }
+        button:active { transform: scale(0.9); background: var(--pwr); color: #000; }
+        button:disabled { opacity: 0.3; pointer-events: none; border-color: #555; color: #555; box-shadow: none; }
+
+        .btn-theme { width: 25px; height: 25px; border-radius: 50%; font-size: 12px; } /* Slightly bumped from 20px to fit glyphs */
+        .btn-sq { width: 35px; height: 35px; border-radius: 4px; font-size: 10px; text-align: center; line-height: 1; }
+        .btn-auto { width: 90%; height: 25px; border-radius: 12px; font-size: 12px; color: #ffd700; border-color: #ffd700; margin: 0 auto; }
+        .btn-auto.active { background: #ffd700; color: #000; animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 5px #ffd700; } 50% { box-shadow: 0 0 20px #ffd700; } 100% { box-shadow: 0 0 5px #ffd700; } }
+    </style>
 </head>
+<body class="emerald" id="app-body">
 
-<body>
-  <div id="startGate"
-       style="position:absolute;inset:0;display:flex;flex-direction:column;
-              justify-content:center;align-items:center;background:#000;color:#0f0;">
-    <h2 style="font-family:monospace;font-size:12px;">BLACK HOLE SULTAN V 1.0.0</h2>
-    <button id="pushStart"
-            style="background:#0f0;color:#000;border:1px solid #0f0;
-                   border-radius:50%;width:80px;height:80px;font-weight:bold;">
-      START
-    </button>
-  </div>
+    <div id="hud">
+        <div class="hud-col">
+            <span>PARTICLES: <span id="p-count">0</span></span>
+            <span>RPM: <span id="rpm-val">2.0</span></span>
+        </div>
+        <div class="hud-center">
+            <div>NEGENTROPY</div>
+            <div id="status-msg">MANUAL STANDBY</div>
+        </div>
+        <div class="hud-col" style="text-align: right;">
+            <span>FPS: <span id="fps">60</span></span>
+            <span>EFF: <span id="eff">100</span>%</span>
+        </div>
+    </div>
 
-  <div id="viewportArea">
-    <canvas id="viewportCanvas" width="400" height="400"></canvas>
-    <div id="particleCount">0</div>
-    <div id="hudFPS" class="hudReadout"></div>
-    <div id="hudTPS" class="hudReadout"></div>
-  </div>
+    <div id="viewport">
+        <canvas id="gl-canvas"></canvas>
+    </div>
 
-  <div id="consoleHUD">
-    <div id="themeName">loading theme</div>
-    <div id="buttonPad"></div>
-    <button id="settingsBtn">⚙️</button>
-  </div>
+    <div id="controls">
+        <button id="btn-auto" class="btn-auto" onclick="toggleAutoMode()">AUTO_SEQ: BEETHOVEN_V</button>
+        
+        <div class="row">
+            <button class="btn-sq manual-ctrl" onclick="adjustRPM(0.5)">RPM<br>+</button>
+            <button class="btn-sq manual-ctrl" onclick="adjustRPM(-0.5)">RPM<br>-</button>
+            <button class="btn-sq manual-ctrl" onclick="adjustParticles(5000)">P<br>+5k</button>
+            <button class="btn-sq manual-ctrl" onclick="flushParticles()">FLUSH<br>0</button>
+        </div>
 
-  <script src="core.js" defer></script>
-  <script src="hud.js" defer></script>
+        <div class="row">
+            <button class="btn-theme manual-ctrl" onclick="setSkin('emerald')">∆</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('solar')">§</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('chrome')">π</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('cobalt')">£</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('stealth')">¢</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('amber')">€</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('rhodium')">¥</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('rose')">®</button>
+            <button class="btn-theme manual-ctrl" onclick="setSkin('blood')">©</button>
+        </div>
+    </div>
 
-  <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const gate = document.getElementById('startGate');
-    const btn  = document.getElementById('pushStart');
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Engine Globals
+        let scene, camera, renderer, singularity, points;
+        let pCount = 0, rpm = 2.0, isAuto = false;
+        let lastTime = performance.now();
+        let frameCount = 0;
 
-    btn.addEventListener('click', async () => {
-      gate.style.display = 'none';
-      if (window.BHS && typeof BHS.start === 'function') {
-        try { await BHS.start(); }
-        catch (err) { console.error('BHS start error:', err); }
-      } else {
-        console.warn('BHS not found.');
-      }
-    });
+        function init() {
+            const vp = document.getElementById('viewport');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 3000);
+            camera.position.z = 600;
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(() => console.log('Service Worker registered.'))
-          .catch(e => console.error('SW register failed:', e));
-      });
-    }
-  });
-  </script>
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: false, alpha: true });
+            renderer.setSize(vp.clientWidth, vp.clientHeight);
+
+            // Singularity Core
+            singularity = new THREE.Mesh(
+                new THREE.IcosahedronGeometry(120, 1),
+                new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.8 })
+            );
+            scene.add(singularity);
+            
+            updateSkinColor();
+            animate();
+        }
+
+        // Particle System Builder (File 2 style static buffer for performance)
+        function buildParticles(targetCount) {
+            if (points) scene.remove(points);
+            pCount = Math.max(0, targetCount);
+            if (pCount === 0) {
+                document.getElementById('p-count').innerText = 0;
+                return;
+            }
+
+            const pArr = new Float32Array(pCount * 3);
+            for(let i = 0; i < pCount; i++) {
+                let r = 400 + Math.random() * 200;
+                let phi = Math.acos(1 - 2 * (i + 0.5) / pCount);
+                let th = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+                pArr[i*3] = r * Math.cos(th) * Math.sin(phi); 
+                pArr[i*3+1] = r * Math.sin(th) * Math.sin(phi); 
+                pArr[i*3+2] = r * Math.cos(phi);
+            }
+
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+            points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 3, color: singularity.material.color, transparent: true, blending: THREE.AdditiveBlending }));
+            scene.add(points);
+            
+            document.getElementById('p-count').innerText = pCount.toLocaleString();
+            haptic(50);
+        }
+
+        // Controls
+        function adjustRPM(amt) {
+            rpm = Math.max(0, rpm + amt);
+            document.getElementById('rpm-val').innerText = rpm.toFixed(1);
+            haptic(20);
+        }
+
+        function adjustParticles(amt) {
+            buildParticles(pCount + amt);
+        }
+
+        function flushParticles() {
+            buildParticles(0);
+        }
+
+        function setSkin(className) {
+            document.getElementById('app-body').className = className;
+            updateSkinColor();
+            haptic(30);
+        }
+
+        function updateSkinColor() {
+            setTimeout(() => {
+                const colorHex = getComputedStyle(document.body).getPropertyValue('--pwr').trim();
+                singularity.material.color.set(colorHex);
+                if (points) points.material.color.set(colorHex);
+            }, 50);
+        }
+
+        // Auto Mode Lockout
+        function toggleAutoMode() {
+            isAuto = !isAuto;
+            const btn = document.getElementById('btn-auto');
+            const ctrls = document.querySelectorAll('.manual-ctrl');
+            
+            if (isAuto) {
+                btn.classList.add('active');
+                document.getElementById('status-msg').innerText = "AUTO_SEQ ENGAGED";
+                ctrls.forEach(c => c.disabled = true);
+                // Placeholder for audio sequence hook
+            } else {
+                btn.classList.remove('active');
+                document.getElementById('status-msg').innerText = "MANUAL STANDBY";
+                ctrls.forEach(c => c.disabled = false);
+            }
+            haptic([30, 50, 30]);
+        }
+
+        function haptic(ms) {
+            if (navigator.vibrate) navigator.vibrate(ms);
+        }
+
+        // Render Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            const now = performance.now();
+            
+            singularity.rotation.y += 0.01 * rpm;
+            singularity.rotation.x += 0.005 * rpm;
+
+            if (points) {
+                points.rotation.y -= 0.005 * rpm;
+                points.rotation.z += 0.002 * rpm;
+                // Simulating gravity decay visual
+                const p = points.geometry.attributes.position.array;
+                for(let i=0; i<pCount*3; i++) { p[i] *= 0.999; }
+                points.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Simple FPS
+            frameCount++;
+            if (now - lastTime >= 1000) {
+                document.getElementById('fps').innerText = frameCount;
+                frameCount = 0;
+                lastTime = now;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
 </body>
 </html>
