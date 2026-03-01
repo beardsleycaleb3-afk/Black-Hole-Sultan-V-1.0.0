@@ -3,171 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="manifest" href="manifest.json">
-    <title>SULTAN_MOBILE_V1</title>
+    <title>SULTAN_MOBILE_V2</title>
     <style>
         :root { --pwr: #ff0000; --accent: #fff; --bg: #000; --panel: #111; }
-        .emerald { --bg: #000; --panel: #000; --pwr: #00ff41; --accent: #fff; }
-        .solar   { --bg: #000; --panel: #000; --pwr: #ffaa00; --accent: #ff0000; }
-        .chrome  { --bg: #000; --panel: #111; --pwr: #fff;    --accent: #888; }
-        .cobalt  { --bg: #000814; --panel: #001d3d; --pwr: #0044ff; --accent: #fff; }
-        .stealth { --bg: #fff; --panel: #eee; --pwr: #ffcc00; --accent: #ff4500; }
-        .amber   { --bg: #3e2723; --panel: #5d4037; --pwr: #ffeb3b; --accent: #ff00ff; }
-        .rhodium { --bg: #f8bbd0; --panel: #880e4f; --pwr: #fff;    --accent: #ff1493; }
-        .blood   { --bg: #000; --panel: #200; --pwr: #f00; --accent: #fff; }
+        .emerald { --pwr: #00ff41; } .solar { --pwr: #ffaa00; } .cobalt { --pwr: #0044ff; }
+        .blood { --pwr: #f00; } .amber { --pwr: #ffeb3b; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; user-select: none; }
-        body { background: var(--bg); color: var(--pwr); font-family: 'Courier New', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; transition: 0.5s; }
+        body { 
+            background: var(--bg); color: var(--pwr); font-family: monospace; 
+            overflow: hidden; height: 100vh; display: flex; flex-direction: column; 
+        }
 
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #f00; cursor: pointer; }
-        #hud { position: absolute; top: 0; width: 100%; height: 10%; padding: 10px; z-index: 10; font-size: 10px; font-weight: bold; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--pwr); display: flex; justify-content: space-between; }
-        #viewport { position: absolute; top: 10%; width: 100%; height: 70%; overflow: hidden; border: 4px solid var(--accent); }
-        #controls { position: absolute; bottom: 0; width: 100%; height: 20%; background: var(--panel); border-top: 2px solid var(--pwr); display: flex; flex-direction: column; justify-content: space-around; padding: 8px; z-index: 20; }
+        /* HUD: Fixed Height */
+        #hud { 
+            height: 80px; padding: 10px 15px; border-bottom: 1px solid var(--pwr);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.9); z-index: 10;
+        }
+
+        /* VIEWPORT: Dynamic Height */
+        #viewport { flex-grow: 1; position: relative; overflow: hidden; }
+        #gl-canvas { width: 100%; height: 100%; display: block; }
+
+        /* CONTROLS: Fixed Height */
+        #controls { 
+            height: 180px; background: var(--panel); border-top: 1px solid var(--pwr);
+            display: flex; flex-direction: column; justify-content: space-evenly;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
         
-        button { background: #000; border: 2px solid var(--pwr); color: var(--pwr); transition: 0.1s; font-weight: bold; }
-        .btn-theme { width: 30px; height: 30px; border-radius: 50%; }
-        .btn-sq { width: 45px; height: 40px; border-radius: 4px; font-size: 10px; }
-        .btn-auto { width: 95%; height: 28px; border-radius: 14px; color: #ffd700; border-color: #ffd700; }
-        .btn-auto.active { background: #ffd700; color: #000; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 5px #ffd700; } 50% { box-shadow: 0 0 20px #ffd700; } }
+        button { background: #000; border: 1px solid var(--pwr); color: var(--pwr); font-weight: bold; padding: 10px; border-radius: 4px; }
+        .btn-theme { width: 35px; height: 35px; border-radius: 50%; padding: 0; }
+        .row { display: flex; justify-content: space-evenly; width: 100%; gap: 5px; padding: 0 10px; }
+        
+        #loader { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #f00; cursor: pointer; }
     </style>
 </head>
 <body class="blood" id="app-body">
     <div id="loader" onclick="initSystem()">
-        <div style="font-size: 20px; margin-bottom: 20px;">[ SULTAN_V1 ]</div>
-        <div>TAP TO INITIALIZE LOADER</div>
+        <h1 style="letter-spacing:5px">[ SULTAN_V2 ]</h1>
+        <p>TAP TO INITIALIZE</p>
     </div>
 
     <div id="hud">
-        <div class="hud-col"><span>P: <span id="p-count">0</span></span><br><span>RPM: <span id="rpm-val">2.0</span></span></div>
-        <div style="text-align:center"><div>NEGENTROPY</div><div id="status-msg">STANDBY</div></div>
-        <div class="hud-col" style="text-align:right"><span>FPS: <span id="fps">60</span></span><br><span>SYNTH: ON</span></div>
+        <div><span>RPM: <b id="rpm-val">2.0</b></span><br><span>PTS: <b id="p-count">0</b></span></div>
+        <div style="text-align:center; font-size: 12px;">NEGENTROPY<br><span id="status-msg" style="color:var(--accent)">STANDBY</span></div>
+        <div style="text-align:right"><span>FPS: <b id="fps">60</b></span><br><span>VER: 2.1</span></div>
     </div>
+
     <div id="viewport"><canvas id="gl-canvas"></canvas></div>
+
     <div id="controls">
-        <button id="btn-auto" class="btn-auto" onclick="toggleAutoMode()">AUTO_SEQ: SYNTH_BEETHOVEN</button>
-        <div style="display:flex;justify-content:space-evenly">
-            <button class="btn-sq" onclick="playManual('sine')">SINE</button>
-            <button class="btn-sq" onclick="playManual('triangle')">TRI</button>
-            <button class="btn-sq" onclick="playManual('square')">SQU</button>
-            <button class="btn-sq" onclick="playManual('sawtooth')">SAW</button>
+        <div class="row"><button id="btn-auto" style="width:100%" onclick="toggleAutoMode()">AUTO_SEQ: SYNTH_BEETHOVEN</button></div>
+        <div class="row">
+            <button style="flex:1" onclick="playManual('sine')">SINE</button>
+            <button style="flex:1" onclick="playManual('triangle')">TRI</button>
+            <button style="flex:1" onclick="playManual('square')">SQU</button>
+            <button style="flex:1" onclick="playManual('sawtooth')">SAW</button>
         </div>
-        <div style="display:flex;justify-content:space-evenly">
-            <button class="btn-theme" onclick="setSkin('emerald')">∆</button>
-            <button class="btn-theme" onclick="setSkin('solar')">§</button>
-            <button class="btn-theme" onclick="setSkin('chrome')">π</button>
-            <button class="btn-theme" onclick="setSkin('cobalt')">£</button>
-            <button class="btn-theme" onclick="setSkin('stealth')">¢</button>
-            <button class="btn-theme" onclick="setSkin('amber')">€</button>
-            <button class="btn-theme" onclick="setSkin('rhodium')">¥</button>
-            <button class="btn-theme" onclick="setSkin('blood')">©</button>
+        <div class="row">
+            <button class="btn-theme" onclick="setSkin('emerald')">E</button>
+            <button class="btn-theme" onclick="setSkin('solar')">S</button>
+            <button class="btn-theme" onclick="setSkin('cobalt')">C</button>
+            <button class="btn-theme" onclick="setSkin('amber')">A</button>
+            <button class="btn-theme" onclick="setSkin('blood')">B</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let audioCtx, reverbNode, scene, camera, renderer, singularity, points, pCount = 0, rpm = 2.0, isAuto = false;
-        let lastTime = performance.now(), frameCount = 0, noteIndex = 0;
-        const b5Freqs = [392, 392, 392, 311, 349, 349, 349, 293]; 
-        const waveTypes = ['sine', 'triangle', 'square', 'sawtooth'];
+        let lastTime = performance.now(), frameCount = 0;
 
         function initSystem() {
             document.getElementById('loader').style.display = 'none';
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Reverb Implementation
             const delay = audioCtx.createDelay();
             delay.delayTime.value = 0.4;
             const feedback = audioCtx.createGain();
             feedback.gain.value = 0.3;
-            delay.connect(feedback);
-            feedback.connect(delay);
-            reverbNode = delay;
-            reverbNode.connect(audioCtx.destination);
-
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./service-worker.js').then(() => console.log('Checksum Header Validated'));
-            }
+            delay.connect(feedback); feedback.connect(delay);
+            reverbNode = delay; reverbNode.connect(audioCtx.destination);
             initVisuals();
         }
-
-        function playTone(type, freq, dur = 0.5) {
-            if(!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
-            osc.connect(gain);
-            gain.connect(reverbNode);
-            osc.start();
-            osc.stop(audioCtx.currentTime + dur);
-            buildParticles(pCount + 100);
-        }
-
-        function playManual(type) { playTone(type, 440 + (Math.random() * 200)); }
 
         function initVisuals() {
             const vp = document.getElementById('viewport');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 3000);
             camera.position.z = 600;
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: false, alpha: true });
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: true, alpha: true });
             renderer.setSize(vp.clientWidth, vp.clientHeight);
-            singularity = new THREE.Mesh(new THREE.IcosahedronGeometry(120, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true, transparent: true, opacity: 0.9 }));
+            singularity = new THREE.Mesh(new THREE.IcosahedronGeometry(120, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true, transparent: true, opacity: 0.5 }));
             scene.add(singularity);
+            window.addEventListener('resize', onWindowResize);
             animate();
+        }
+
+        function onWindowResize() {
+            const vp = document.getElementById('viewport');
+            camera.aspect = vp.clientWidth / vp.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(vp.clientWidth, vp.clientHeight);
         }
 
         function buildParticles(targetCount) {
             if (points) scene.remove(points);
-            pCount = Math.max(0, targetCount);
+            pCount = Math.min(targetCount, 5000); // Caps for mobile performance
             const pArr = new Float32Array(pCount * 3);
-            const cArr = new Float32Array(pCount * 3);
             for(let i = 0; i < pCount; i++) {
-                let r = 350 + Math.random() * 250, th = Math.random() * Math.PI * 2, phi = Math.acos(Math.random() * 2 - 1);
+                let r = 300 + Math.random() * 200, th = Math.random() * Math.PI * 2, phi = Math.acos(Math.random() * 2 - 1);
                 pArr[i*3] = r * Math.sin(phi) * Math.cos(th); pArr[i*3+1] = r * Math.sin(phi) * Math.sin(th); pArr[i*3+2] = r * Math.cos(phi);
-                cArr[i*3] = Math.random(); cArr[i*3+1] = Math.random(); cArr[i*3+2] = Math.random();
             }
             const geo = new THREE.BufferGeometry();
             geo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
-            geo.setAttribute('color', new THREE.BufferAttribute(cArr, 3));
-            points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 4, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true }));
+            points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 3, color: 0xffffff, transparent: true, opacity: 0.8 }));
             scene.add(points);
-            document.getElementById('p-count').innerText = pCount.toLocaleString();
+            document.getElementById('p-count').innerText = pCount;
         }
 
-        function setSkin(className) { document.getElementById('app-body').className = className; if (navigator.vibrate) navigator.vibrate(30); }
-
-        function toggleAutoMode() {
-            isAuto = !isAuto;
-            document.getElementById('btn-auto').classList.toggle('active');
-            if (isAuto) {
-                document.getElementById('status-msg').innerText = "SYNTH_MODE";
-                autoLoop();
-            } else {
-                document.getElementById('status-msg').innerText = "STANDBY";
-            }
+        function playTone(type, freq, dur = 0.5) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(reverbNode);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+            buildParticles(pCount + 50);
         }
 
-        async function autoLoop() {
-            while(isAuto) {
-                let freq = b5Freqs[noteIndex % b5Freqs.length];
-                let wave = waveTypes[noteIndex % 4];
-                playTone(wave, freq, 0.4);
-                noteIndex++;
-                await new Promise(r => setTimeout(r, 450));
-            }
-        }
+        function playManual(type) { playTone(type, 440 + (Math.random() * 200)); }
+        function setSkin(className) { document.getElementById('app-body').className = className; singularity.material.color.set(getComputedStyle(document.body).getPropertyValue('--pwr')); }
+        function toggleAutoMode() { isAuto = !isAuto; document.getElementById('status-msg').innerText = isAuto ? "RUNNING" : "STANDBY"; }
 
         function animate() {
             requestAnimationFrame(animate);
-            singularity.rotation.y += 0.01 * rpm; singularity.rotation.x += 0.005 * rpm;
+            singularity.rotation.y += 0.01 * rpm;
             if (points) {
-                points.rotation.y -= 0.002;
                 const p = points.geometry.attributes.position.array;
-                for(let i=0; i<pCount*3; i++) { p[i] *= 0.994; }
+                for(let i=0; i<pCount*3; i++) { p[i] *= 0.995; }
                 points.geometry.attributes.position.needsUpdate = true;
             }
             const now = performance.now(); frameCount++;
