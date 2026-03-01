@@ -2,155 +2,185 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SULTAN_MOBILE_V2</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+    <title>SULTAN_BLACK_HOLE_V3.5</title>
     <style>
-        :root { --pwr: #ff0000; --accent: #fff; --bg: #000; --panel: #111; }
-        .emerald { --pwr: #00ff41; } .solar { --pwr: #ffaa00; } .cobalt { --pwr: #0044ff; }
-        .blood { --pwr: #f00; } .amber { --pwr: #ffeb3b; }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; user-select: none; }
-        body { 
-            background: var(--bg); color: var(--pwr); font-family: monospace; 
-            overflow: hidden; height: 100vh; display: flex; flex-direction: column; 
-        }
-
-        /* HUD: Fixed Height */
-        #hud { 
-            height: 80px; padding: 10px 15px; border-bottom: 1px solid var(--pwr);
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.9); z-index: 10;
-        }
-
-        /* VIEWPORT: Dynamic Height */
-        #viewport { flex-grow: 1; position: relative; overflow: hidden; }
-        #gl-canvas { width: 100%; height: 100%; display: block; }
-
-        /* CONTROLS: Fixed Height */
-        #controls { 
-            height: 180px; background: var(--panel); border-top: 1px solid var(--pwr);
-            display: flex; flex-direction: column; justify-content: space-evenly;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
+        :root { --pwr: #00ff41; --bg: #000; --panel: #050505; }
+        .emerald { --pwr: #00ff41; } .blood { --pwr: #f00; } .cobalt { --pwr: #0044ff; }
+        * { margin:0; padding:0; box-sizing:border-box; touch-action:none; user-select:none; }
+        body { background:var(--bg); color:var(--pwr); font-family:monospace; overflow:hidden; height:100vh; display:flex; flex-direction:column; }
         
-        button { background: #000; border: 1px solid var(--pwr); color: var(--pwr); font-weight: bold; padding: 10px; border-radius: 4px; }
-        .btn-theme { width: 35px; height: 35px; border-radius: 50%; padding: 0; }
-        .row { display: flex; justify-content: space-evenly; width: 100%; gap: 5px; padding: 0 10px; }
+        #hud { height:50px; padding:10px 20px; border-bottom:1px solid var(--pwr); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.9); z-index:10; font-size:12px; }
+        #viewport { flex-grow:1; position:relative; }
+        #gl-canvas { width:100%; height:100%; display:block; }
         
-        #loader { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #f00; cursor: pointer; }
+        #controls { height:160px; background:var(--panel); border-top:1px solid var(--pwr); display:grid; grid-template-rows:1fr 1fr; gap:8px; padding:10px; padding-bottom:env(safe-area-inset-bottom); }
+        .row { display:flex; gap:8px; }
+        button { flex:1; background:#000; border:1px solid var(--pwr); color:var(--pwr); font-weight:900; border-radius:2px; font-size:10px; text-transform:uppercase; transition:0.1s; }
+        button:active { background:var(--pwr); color:#000; }
+        
+        #loader { position:fixed; inset:0; background:#000; z-index:100; display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer; }
     </style>
 </head>
-<body class="blood" id="app-body">
-    <div id="loader" onclick="initSystem()">
-        <h1 style="letter-spacing:5px">[ SULTAN_V2 ]</h1>
-        <p>TAP TO INITIALIZE</p>
+<body class="emerald">
+
+<div id="loader" onclick="initSystem()">
+    <h1 style="color:var(--pwr); letter-spacing:10px;">BLACK_HOLE</h1>
+    <p style="color:#444; margin-top:10px;">LOAD_SEQUENCE_01</p>
+</div>
+
+<div id="hud">
+    <div id="coord">X:000 Y:2000</div>
+    <div style="font-weight:900;">BH_MUSIC_BOX_v3.5</div>
+    <div>BUFFER: <span id="p-count">0</span></div>
+</div>
+
+<div id="viewport"><canvas id="gl-canvas"></canvas></div>
+
+<div id="controls">
+    <div class="row">
+        <button onclick="playNote('sine', 261.63)">C4</button>
+        <button onclick="playNote('sine', 329.63)">E4</button>
+        <button onclick="playNote('sine', 392.00)">G4</button>
+        <button onclick="playNote('sine', 523.25)">C5</button>
     </div>
-
-    <div id="hud">
-        <div><span>RPM: <b id="rpm-val">2.0</b></span><br><span>PTS: <b id="p-count">0</b></span></div>
-        <div style="text-align:center; font-size: 12px;">NEGENTROPY<br><span id="status-msg" style="color:var(--accent)">STANDBY</span></div>
-        <div style="text-align:right"><span>FPS: <b id="fps">60</b></span><br><span>VER: 2.1</span></div>
+    <div class="row">
+        <button onclick="setSkin('emerald')">EMR</button>
+        <button onclick="setSkin('blood')">BLD</button>
+        <button onclick="setSkin('cobalt')">COB</button>
+        <button onclick="clearBuffer()" style="color:#f00; border-color:#f00;">PURGE</button>
     </div>
+</div>
 
-    <div id="viewport"><canvas id="gl-canvas"></canvas></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    let scene, camera, renderer, hole, aCtx, reverb, nodes = [];
+    const geoms = [
+        new THREE.BoxGeometry(12, 12, 12),
+        new THREE.TetrahedronGeometry(14),
+        new THREE.TorusGeometry(8, 3, 8, 16),
+        new THREE.SphereGeometry(8, 12, 12)
+    ];
 
-    <div id="controls">
-        <div class="row"><button id="btn-auto" style="width:100%" onclick="toggleAutoMode()">AUTO_SEQ: SYNTH_BEETHOVEN</button></div>
-        <div class="row">
-            <button style="flex:1" onclick="playManual('sine')">SINE</button>
-            <button style="flex:1" onclick="playManual('triangle')">TRI</button>
-            <button style="flex:1" onclick="playManual('square')">SQU</button>
-            <button style="flex:1" onclick="playManual('sawtooth')">SAW</button>
-        </div>
-        <div class="row">
-            <button class="btn-theme" onclick="setSkin('emerald')">E</button>
-            <button class="btn-theme" onclick="setSkin('solar')">S</button>
-            <button class="btn-theme" onclick="setSkin('cobalt')">C</button>
-            <button class="btn-theme" onclick="setSkin('amber')">A</button>
-            <button class="btn-theme" onclick="setSkin('blood')">B</button>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        let audioCtx, reverbNode, scene, camera, renderer, singularity, points, pCount = 0, rpm = 2.0, isAuto = false;
-        let lastTime = performance.now(), frameCount = 0;
-
-        function initSystem() {
-            document.getElementById('loader').style.display = 'none';
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const delay = audioCtx.createDelay();
-            delay.delayTime.value = 0.4;
-            const feedback = audioCtx.createGain();
-            feedback.gain.value = 0.3;
-            delay.connect(feedback); feedback.connect(delay);
-            reverbNode = delay; reverbNode.connect(audioCtx.destination);
-            initVisuals();
+    function initSystem() {
+        document.getElementById('loader').style.display = 'none';
+        aCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Impulse Response for Deep Space Reverb
+        const len = aCtx.sampleRate * 3, imp = aCtx.createBuffer(2, len, aCtx.sampleRate);
+        for(let i=0; i<2; i++) {
+            const ch = imp.getChannelData(i);
+            for(let j=0; j<len; j++) ch[j] = (Math.random()*2-1) * Math.pow(1 - j/len, 3);
         }
+        reverb = aCtx.createConvolver(); reverb.buffer = imp;
+        reverb.connect(aCtx.destination);
+        
+        initVisuals();
+    }
 
-        function initVisuals() {
-            const vp = document.getElementById('viewport');
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 3000);
-            camera.position.z = 600;
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: true, alpha: true });
-            renderer.setSize(vp.clientWidth, vp.clientHeight);
-            singularity = new THREE.Mesh(new THREE.IcosahedronGeometry(120, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true, transparent: true, opacity: 0.5 }));
-            scene.add(singularity);
-            window.addEventListener('resize', onWindowResize);
-            animate();
-        }
+    function initVisuals() {
+        const vp = document.getElementById('viewport');
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 3000);
+        camera.position.z = 800;
 
-        function onWindowResize() {
-            const vp = document.getElementById('viewport');
-            camera.aspect = vp.clientWidth / vp.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(vp.clientWidth, vp.clientHeight);
-        }
+        renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: true, alpha: true });
+        renderer.setSize(vp.clientWidth, vp.clientHeight);
 
-        function buildParticles(targetCount) {
-            if (points) scene.remove(points);
-            pCount = Math.min(targetCount, 5000); // Caps for mobile performance
-            const pArr = new Float32Array(pCount * 3);
-            for(let i = 0; i < pCount; i++) {
-                let r = 300 + Math.random() * 200, th = Math.random() * Math.PI * 2, phi = Math.acos(Math.random() * 2 - 1);
-                pArr[i*3] = r * Math.sin(phi) * Math.cos(th); pArr[i*3+1] = r * Math.sin(phi) * Math.sin(th); pArr[i*3+2] = r * Math.cos(phi);
+        // The Event Horizon
+        hole = new THREE.Mesh(
+            new THREE.SphereGeometry(80, 32, 32),
+            new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.8 })
+        );
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(85, 2, 2, 100),
+            new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })
+        );
+        scene.add(hole, ring);
+
+        animate();
+    }
+
+    function playNote(type, freq) {
+        if(!aCtx) return;
+        const osc = aCtx.createOscillator(), g = aCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, aCtx.currentTime);
+        g.gain.setValueAtTime(0.1, aCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, aCtx.currentTime + 1.5);
+        osc.connect(g); g.connect(reverb);
+        osc.start(); osc.stop(aCtx.currentTime + 1.5);
+        
+        spawnNode(freq);
+    }
+
+    function spawnNode(freq) {
+        const typeIdx = Math.floor(Math.random() * 4);
+        const mat = new THREE.MeshBasicMaterial({ 
+            color: getComputedStyle(document.body).getPropertyValue('--pwr'), 
+            wireframe: true 
+        });
+        const mesh = new THREE.Mesh(geoms[typeIdx], mat);
+        
+        let angle = Math.random() * Math.PI * 2;
+        let dist = 500 + Math.random() * 200;
+        mesh.position.set(Math.cos(angle)*dist, Math.sin(angle)*dist, (Math.random()-0.5)*100);
+        
+        const node = {
+            mesh: mesh,
+            angle: angle,
+            dist: dist,
+            speed: 0.01 + (Math.random()*0.02),
+            sink: 0.5 + (Math.random()*1.5),
+            freq: freq
+        };
+        
+        scene.add(mesh);
+        nodes.push(node);
+        document.getElementById('p-count').innerText = nodes.length;
+    }
+
+    function setSkin(s) { 
+        document.body.className = s;
+        const c = getComputedStyle(document.body).getPropertyValue('--pwr');
+        scene.children.forEach(child => { if(child.material && child !== hole) child.material.color.set(c); });
+    }
+
+    function clearBuffer() {
+        nodes.forEach(n => scene.remove(n.mesh));
+        nodes = [];
+        document.getElementById('p-count').innerText = 0;
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        nodes.forEach((n, i) => {
+            n.angle += n.speed;
+            n.dist -= n.sink; // Gravitational pull
+            
+            n.mesh.position.x = Math.cos(n.angle) * n.dist;
+            n.mesh.position.y = Math.sin(n.angle) * n.dist;
+            n.mesh.rotation.x += 0.05;
+            n.mesh.rotation.y += 0.05;
+
+            // Coordinate Tracking Overlay
+            if(i === 0) {
+                document.getElementById('coord').innerText = `X:${Math.floor(n.mesh.position.x)} Y:${Math.floor(n.dist)}`;
             }
-            const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
-            points = new THREE.Points(geo, new THREE.PointsMaterial({ size: 3, color: 0xffffff, transparent: true, opacity: 0.8 }));
-            scene.add(points);
-            document.getElementById('p-count').innerText = pCount;
-        }
 
-        function playTone(type, freq, dur = 0.5) {
-            if(!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
-            osc.connect(gain); gain.connect(reverbNode);
-            osc.start(); osc.stop(audioCtx.currentTime + dur);
-            buildParticles(pCount + 50);
-        }
-
-        function playManual(type) { playTone(type, 440 + (Math.random() * 200)); }
-        function setSkin(className) { document.getElementById('app-body').className = className; singularity.material.color.set(getComputedStyle(document.body).getPropertyValue('--pwr')); }
-        function toggleAutoMode() { isAuto = !isAuto; document.getElementById('status-msg').innerText = isAuto ? "RUNNING" : "STANDBY"; }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            singularity.rotation.y += 0.01 * rpm;
-            if (points) {
-                const p = points.geometry.attributes.position.array;
-                for(let i=0; i<pCount*3; i++) { p[i] *= 0.995; }
-                points.geometry.attributes.position.needsUpdate = true;
+            // Event Horizon Crossing
+            if(n.dist < 85) {
+                n.mesh.scale.multiplyScalar(0.9);
+                if(n.dist < 10) {
+                    scene.remove(n.mesh);
+                    nodes.splice(i, 1);
+                    document.getElementById('p-count').innerText = nodes.length;
+                }
             }
-            const now = performance.now(); frameCount++;
-            if (now - lastTime >= 1000) { document.getElementById('fps').innerText = frameCount; frameCount = 0; lastTime = now; }
-            renderer.render(scene, camera);
-        }
-    </script>
+        });
+
+        renderer.render(scene, camera);
+    }
+</script>
 </body>
 </html>
