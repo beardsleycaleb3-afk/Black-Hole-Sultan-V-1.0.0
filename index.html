@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-    <title>SULTAN_BLACK_HOLE_V3.5</title>
+    <title>black_hole_music_box</title>
     <style>
         :root { --pwr: #00ff41; --bg: #000; --panel: #050505; }
         .emerald { --pwr: #00ff41; } .blood { --pwr: #f00; } .cobalt { --pwr: #0044ff; }
@@ -14,7 +14,7 @@
         #viewport { flex-grow:1; position:relative; }
         #gl-canvas { width:100%; height:100%; display:block; }
         
-        #controls { height:160px; background:var(--panel); border-top:1px solid var(--pwr); display:grid; grid-template-rows:1fr 1fr; gap:8px; padding:10px; padding-bottom:env(safe-area-inset-bottom); }
+        #controls { height:80px; background:var(--panel); border-top:1px solid var(--pwr); display:grid; grid-template-rows:1fr 1fr; gap:8px; padding:10px; padding-bottom:env(safe-area-inset-bottom); }
         .row { display:flex; gap:8px; }
         button { flex:1; background:#000; border:1px solid var(--pwr); color:var(--pwr); font-weight:900; border-radius:2px; font-size:10px; text-transform:uppercase; transition:0.1s; }
         button:active { background:var(--pwr); color:#000; }
@@ -26,12 +26,12 @@
 
 <div id="loader" onclick="initSystem()">
     <h1 style="color:var(--pwr); letter-spacing:10px;">BLACK_HOLE</h1>
-    <p style="color:#444; margin-top:10px;">LOAD_SEQUENCE_01</p>
+    <p style="color:#444; margin-top:10px;">LOAD</p>
 </div>
 
 <div id="hud">
-    <div id="coord">X:000 Y:2000</div>
-    <div style="font-weight:900;">BH_MUSIC_BOX_v3.5</div>
+    <div id="coord">X:000 Y:000</div>
+    <div style="font-weight:900;">π</div>
     <div>BUFFER: <span id="p-count">0</span></div>
 </div>
 
@@ -39,16 +39,16 @@
 
 <div id="controls">
     <div class="row">
-        <button onclick="playNote('sine', 261.63)">C4</button>
-        <button onclick="playNote('sine', 329.63)">E4</button>
-        <button onclick="playNote('sine', 392.00)">G4</button>
-        <button onclick="playNote('sine', 523.25)">C5</button>
+        <button onclick="playNote('sine', 261.63)">∆</button>
+        <button onclick="playNote('sine', 329.63)">£</button>
+        <button onclick="playNote('sine', 392.00)">€</button>
+        <button onclick="playNote('sine', 523.25)">¥</button>
     </div>
     <div class="row">
-        <button onclick="setSkin('emerald')">EMR</button>
-        <button onclick="setSkin('blood')">BLD</button>
-        <button onclick="setSkin('cobalt')">COB</button>
-        <button onclick="clearBuffer()" style="color:#f00; border-color:#f00;">PURGE</button>
+        <button onclick="setSkin('emerald')">°</button>
+        <button onclick="setSkin('blood')">•</button>
+        <button onclick="setSkin('cobalt')">©</button>
+        <button onclick="clearBuffer()" style="color:#f00; border-color:#f00;">®</button>
     </div>
 </div>
 
@@ -81,8 +81,8 @@
     function initVisuals() {
         const vp = document.getElementById('viewport');
         scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 3000);
-        camera.position.z = 800;
+        camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 500);
+        camera.position.z = 200;
 
         renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: true, alpha: true });
         renderer.setSize(vp.clientWidth, vp.clientHeight);
