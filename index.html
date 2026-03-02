@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
     <title>black_hole_music_box</title>
     <style>
-        :root { --pwr: #00ff41; --bg: #000; --panel: #050505; }
+        :root { --pwr: #00ff41; --bg: #666; --panel: #050505; }
         .emerald { --pwr: #00ff41; } .blood { --pwr: #f00; } .cobalt { --pwr: #0044ff; }
         * { margin:0; padding:0; box-sizing:border-box; touch-action:none; user-select:none; }
         body { background:var(--bg); color:var(--pwr); font-family:monospace; overflow:hidden; height:100vh; display:flex; flex-direction:column; }
         
-        #hud { height:50px; padding:10px 20px; border-bottom:1px solid var(--pwr); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.9); z-index:10; font-size:12px; }
+        #hud { height:50px; padding:30px 40px; border-bottom:10px solid var(--pwr); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.9); z-index:10; font-size:20px; }
         #viewport { flex-grow:1; position:relative; }
         #gl-canvas { width:100%; height:100%; display:block; }
         
-        #controls { height:80px; background:var(--panel); border-top:1px solid var(--pwr); display:grid; grid-template-rows:1fr 1fr; gap:8px; padding:10px; padding-bottom:env(safe-area-inset-bottom); }
-        .row { display:flex; gap:8px; }
-        button { flex:1; background:#000; border:1px solid var(--pwr); color:var(--pwr); font-weight:900; border-radius:2px; font-size:10px; text-transform:uppercase; transition:0.1s; }
-        button:active { background:var(--pwr); color:#000; }
+        #controls { height:80px; background:var(--panel); border-top:4px solid var(--pwr); display:grid; grid-template-rows:1fr 1fr; gap:8px; padding:20px; padding-bottom:env(safe-area-inset-bottom); }
+        .row { display:flex; gap:12px; }
+        button { flex:1; background:#222; border:2px solid var(--pwr); color:var(--pwr); font-weight:900; border-radius:50px; font-size:20px; text-transform:uppercase; transition:0.1s; }
+        button:active { background:var(--pwr); color:#333; }
         
         #loader { position:fixed; inset:0; background:#000; z-index:100; display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer; }
     </style>
@@ -81,8 +81,8 @@
     function initVisuals() {
         const vp = document.getElementById('viewport');
         scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 500);
-        camera.position.z = 200;
+        camera = new THREE.PerspectiveCamera(60, vp.clientWidth / vp.clientHeight, 1, 1500);
+        camera.position.z = 400;
 
         renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl-canvas'), antialias: true, alpha: true });
         renderer.setSize(vp.clientWidth, vp.clientHeight);
@@ -90,7 +90,7 @@
         // The Event Horizon
         hole = new THREE.Mesh(
             new THREE.SphereGeometry(80, 32, 32),
-            new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.8 })
+            new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 })
         );
         const ring = new THREE.Mesh(
             new THREE.TorusGeometry(85, 2, 2, 100),
